@@ -12,8 +12,8 @@ cors = CORS(app)
 api = Api(app)
 
 
-class Tikz(Resource):
-	def get(self):
+class TikzCode(Resource):
+	def post(self):
 		rawBase64 = request.form['data']
 		fileName = "new"
 		file = open("{0}.tex".format(fileName), "wb")
@@ -23,9 +23,10 @@ class Tikz(Resource):
 		subprocess.run(["./script.sh"], check=True)
 		fileContent = open("{0}.png".format(fileName), "rb")
 		fileContentBase64 = base64.b64encode(fileContent.read())
-			
-		return 'done'
+		return Response(fileContentBase64.decode("utf-8"), mimetype='image/png')
 
+
+class TikzFile(Resource):
 	def post(self): 
 		#Save file and get the file name to prepare .sh file
 		f = request.files['file']
@@ -43,10 +44,11 @@ class Tikz(Resource):
 			
 			return Response(fileContentBase64.decode("utf-8"), mimetype='image/png')
 		else:
-			abort(400) 
+			abort(400)
 
 
-api.add_resource(Tikz, "/")
+api.add_resource(TikzCode, "/code")
+api.add_resource(TikzFile, "/")
 
 if __name__ == "__main__":
 	app.run(debug=True)
